@@ -1,0 +1,6 @@
+#results table {
+  white-space: nowrap;
+}
+#results {
+  overflow: auto;
+}
