@@ -1,5 +1,7 @@
 {
   "database": {},
   "queries": {},
-  "admin": {}
+  "admin": {
+    "password_hash": "scrypt:32768:8:1$2ev8D3lkXri73dHY$41588e58631da49346c9e0e03121c0417658e9a6f4232c6d667a861189d4c197dd369f902edb17db845528b92faa83630fd1aa759a2bea738326401cb26b82a9"
+  }
 }
