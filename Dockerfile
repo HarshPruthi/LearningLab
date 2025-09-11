@@ -10,13 +10,19 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt gunicorn==21.2.0
 
+# app code
 COPY . /app
+
+# Azure MySQL CA (already added)
+COPY azure-mysql-ca.pem /etc/ssl/certs/azure-mysql-ca.pem
+ENV DB_SSL_CA=/etc/ssl/certs/azure-mysql-ca.pem
+
+# make app files writable for non-root
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
 
 ENV CONFIG_PATH=/app/config.json
 ENV PYTHONUNBUFFERED=1
-
-RUN useradd -m appuser
-USER appuser
 
 EXPOSE 8080
 

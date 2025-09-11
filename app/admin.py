@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+import os
 
 admin_bp = Blueprint("admin", __name__, template_folder="templates")
 
@@ -37,17 +38,8 @@ def dashboard():
     message = None
     if request.method == "POST":
         if request.form.get("form_type") == "db":
-            db = {
-                "driver": request.form.get("driver") or "postgresql",
-                "host": request.form.get("host"),
-                "port": request.form.get("port"),
-                "database": request.form.get("database"),
-                "username": request.form.get("username"),
-                "password": request.form.get("password"),
-            }
-            config["database"] = db
-            current_app.config_store.save(config)
-            message = "Database settings saved."
+            # DB settings are managed via environment/Secrets; ignore saves
+            message = "Database settings are managed by AWS Secrets and cannot be changed here."
         elif request.form.get("form_type") == "queries":
             queries = {}
             for key, value in request.form.items():
@@ -62,4 +54,14 @@ def dashboard():
                 config.setdefault("admin", {})["password_hash"] = generate_password_hash(new_password)
                 current_app.config_store.save(config)
                 message = "Admin password updated."
-    return render_template("admin_dashboard.html", config=config, message=message)
+
+    # Provide DB env values to template for read-only display
+    db_env = {
+        "driver": os.environ.get("DB_DRIVER", "postgresql"),
+        "host": os.environ.get("DB_HOST", ""),
+        "port": os.environ.get("DB_PORT", ""),
+        "database": os.environ.get("DB_NAME", ""),
+        "username": os.environ.get("DB_USERNAME", ""),
+        "password": "********" if os.environ.get("DB_PASSWORD") else "",
+    }
+    return render_template("admin_dashboard.html", config=config, message=message, db_env=db_env)

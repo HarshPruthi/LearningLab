@@ -13,41 +13,52 @@
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Admin Dashboard</h3>
-    <a class="btn btn-outline-secondary btn-sm" href="/admin/logout">Logout</a>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="/">Back to App</a>
+      <button class="btn btn-success btn-sm" onclick="saveQueries()">Save Queries</button>
+      <a class="btn btn-outline-secondary btn-sm" href="/admin/logout">Logout</a>
+    </div>
   </div>
-  {% if message %}<div class="alert alert-success">{{ message }}</div>{% endif %}
-
+  </div>
   <div class="row g-4">
     <div class="col-md-6">
-      <div class="card shadow-sm">
+      <div class="card shadow-sm h-100">
         <div class="card-body">
           <h5>Database Settings</h5>
           <form method="post">
             <input type="hidden" name="form_type" value="db">
             <div class="mb-2">
               <label class="form-label">Driver</label>
-              <select class="form-select" name="driver">
-                <option value="postgresql" {% if config.database.driver=='postgresql' %}selected{% endif %}>PostgreSQL</option>
-                <option value="mysql" {% if config.database.driver=='mysql' %}selected{% endif %}>MySQL</option>
-              </select>
+              <input class="form-control" value="{{ db_env.driver }}" readonly>
             </div>
             <div class="row g-2">
-              <div class="col"><input class="form-control" name="host" placeholder="host" value="{{ config.database.host or '' }}"></div>
-              <div class="col"><input class="form-control" name="port" placeholder="port" value="{{ config.database.port or '' }}"></div>
+              <div class="col">
+                <input class="form-control" placeholder="host" value="{{ db_env.host }}" readonly>
+              </div>
+              <div class="col">
+                <input class="form-control" placeholder="port" value="{{ db_env.port }}" readonly>
+              </div>
             </div>
             <div class="row g-2 mt-1">
-              <div class="col"><input class="form-control" name="database" placeholder="database" value="{{ config.database.database or '' }}"></div>
-              <div class="col"><input class="form-control" name="username" placeholder="username" value="{{ config.database.username or '' }}"></div>
+              <div class="col">
+                <input class="form-control" placeholder="database" value="{{ db_env.database }}" readonly>
+              </div>
+              <div class="col">
+                <input class="form-control" placeholder="username" value="{{ db_env.username }}" readonly>
+              </div>
             </div>
-            <div class="mt-2"><input class="form-control" name="password" type="password" placeholder="password (not shown)"></div>
-            <button class="btn btn-primary mt-2">Save</button>
+            <div class="mt-2">
+              <input class="form-control" type="password" placeholder="password" value="{{ db_env.password }}" readonly>
+            </div>
+            <button class="btn btn-secondary mt-2" disabled title="Managed by AWS Secrets">Save (disabled)</button>
+            <div class="form-text">These settings are read-only and managed via AWS Secrets.</div>
           </form>
         </div>
       </div>
     </div>
 
     <div class="col-md-6">
-      <div class="card shadow-sm">
+      <div class="card shadow-sm h-100">
         <div class="card-body">
           <h5>Admin Password</h5>
           <form method="post">
@@ -73,7 +84,7 @@
                   {% set key = course + ':' + action %}
                   <div class="col">
                     <label class="form-label fw-semibold">{{ key }}</label>
-                    <textarea class="form-control" rows="3" name="q_{{ key | replace(':', '__') }}">{{ (config.queries[key] or '') if config.queries else '' }}</textarea>
+                    <textarea class="form-control" rows="6" style="min-height: 140px" name="q_{{ key | replace(':', '__') }}">{{ (config.queries[key] or '') if config.queries else '' }}</textarea>
                   </div>
                 {% endfor %}
               {% endfor %}
@@ -84,6 +95,11 @@
       </div>
     </div>
   </div>
-</div>
-</body>
-</html>
+  <script>
+    function saveQueries() {
+      const form = document.querySelector('form input[name="form_type"][value="queries"]').closest('form');
+      if (form) {
+        form.submit();
+      }
+    }
+  </script>
